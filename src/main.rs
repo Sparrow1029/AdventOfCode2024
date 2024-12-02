@@ -1,4 +1,4 @@
-use aoc24::{puzzles::day01, Cli, Commands};
+use aoc24::{Cli, Commands, DAY_MAP};
 use clap::Parser;
 
 fn main() {
@@ -11,9 +11,9 @@ fn main() {
             Commands::Test { day } => {
                 println!("Test day {day:02}")
             }
-            Commands::Solve { day } => match day {
-                1 => day01::solve(),
-                _ => todo!(),
+            Commands::Solve { day } => match DAY_MAP.get(&day) {
+                Some(solve) => solve(),
+                None => println!("Error: Day {day} not implemented"),
             },
         }
     }
