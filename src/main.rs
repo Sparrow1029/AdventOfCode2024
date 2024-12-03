@@ -3,13 +3,14 @@ use clap::Parser;
 
 fn main() {
     let cli = Cli::parse();
-    if cli.all {
-        todo!() // Run all solves
-    }
     if let Some(subcommand) = cli.run {
         match subcommand {
-            Commands::Test { day } => {
-                println!("Test day {day:02}")
+            Commands::All => {
+                for k in 1..=DAY_MAP.keys().len() {
+                    println!("Day {k:02}");
+                    DAY_MAP[&(k as u32)]();
+                    println!();
+                }
             }
             Commands::Solve { day } => match DAY_MAP.get(&day) {
                 Some(solve) => solve(),
