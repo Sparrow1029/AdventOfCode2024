@@ -16,3 +16,8 @@ pointers. We'll see how gross that looks as the days go on...
 Overall, spent more time than I should have on this simple one. Return of the
 `nom` crate for parsing puzzle inputs, and I tried to be very functional in
 the approach to testing the sequences.
+
+## Day 03
+
+Got stuck for a while because of how the `regex` crate's `captures_iter` works.
+Ended up with an okay solution.
