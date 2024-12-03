@@ -7,8 +7,9 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     pub static ref DAY_MAP: HashMap<u32, fn()> = HashMap::from([
-        (1u32, puzzles::day01::solve as fn()),
-        (2u32, puzzles::day02::solve as fn()),
+        (1, puzzles::day01::solve as fn()),
+        (2, puzzles::day02::solve as fn()),
+        (3, puzzles::day03::solve as fn()),
     ]);
 }
 
