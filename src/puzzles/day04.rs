@@ -58,13 +58,6 @@ fn part2(grid: &Grid<u8>) -> usize {
                         .map(|i| i.unwrap_or(0))),
                 )
             {
-                // println!(
-                //     "{:?}, {:?}",
-                //     *grid.get(y, x).unwrap_or(&b'Z') as char,
-                //     Point::new(x as isize, y as isize)
-                //         .diagonal_neighbors(grid)
-                //         .map(|c| c.unwrap_or(b'.') as char)
-                // );
                 xmas_count += 1;
             }
         }
