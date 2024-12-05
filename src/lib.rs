@@ -11,6 +11,7 @@ lazy_static! {
         (2, puzzles::day02::solve as fn()),
         (3, puzzles::day03::solve as fn()),
         (4, puzzles::day04::solve as fn()),
+        (5, puzzles::day05::solve as fn()),
     ]);
 }
 
