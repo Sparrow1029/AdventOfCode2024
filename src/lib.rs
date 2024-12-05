@@ -1,19 +1,15 @@
 pub mod puzzles;
 pub mod shared;
-use std::collections::HashMap;
 
 use clap::{Parser, Subcommand};
-use lazy_static::lazy_static;
 
-lazy_static! {
-    pub static ref DAY_MAP: HashMap<u32, fn()> = HashMap::from([
-        (1, puzzles::day01::solve as fn()),
-        (2, puzzles::day02::solve as fn()),
-        (3, puzzles::day03::solve as fn()),
-        (4, puzzles::day04::solve as fn()),
-        (5, puzzles::day05::solve as fn()),
-    ]);
-}
+pub const DAY_MAP: [fn(); 5] = [
+    puzzles::day01::solve as fn(),
+    puzzles::day02::solve as fn(),
+    puzzles::day03::solve as fn(),
+    puzzles::day04::solve as fn(),
+    puzzles::day05::solve as fn(),
+];
 
 #[derive(Parser)]
 pub struct Cli {
@@ -27,5 +23,5 @@ pub enum Commands {
     /// Run all solutions
     All,
     /// Run the solution for a day
-    Solve { day: u32 },
+    Solve { day: isize },
 }

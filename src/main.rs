@@ -6,16 +6,19 @@ fn main() {
     if let Some(subcommand) = cli.run {
         match subcommand {
             Commands::All => {
-                for k in 1..=DAY_MAP.keys().len() {
-                    println!("Day {k:02}");
-                    DAY_MAP[&(k as u32)]();
+                for (idx, solve) in DAY_MAP.iter().enumerate() {
+                    println!("Day {:02}", idx + 1);
+                    solve();
                     println!();
                 }
             }
-            Commands::Solve { day } => match DAY_MAP.get(&day) {
-                Some(solve) => solve(),
-                None => println!("Error: Day {day} not implemented"),
-            },
+            Commands::Solve { day } => {
+                if (1..=DAY_MAP.len()).contains(&(day.unsigned_abs())) {
+                    DAY_MAP[day.unsigned_abs() - 1]();
+                } else {
+                    println!("Error: Day {day} not implemented");
+                }
+            }
         }
     }
 }
