@@ -1,11 +1,12 @@
 use std::{cmp::Ordering, fs::read_to_string};
 
-use nom::{bytes::complete::tag, character, multi::separated_list1, IResult};
 use simple_grid::Grid;
 
+type Idx = (usize, usize);
 type Matrix = Grid<Ordering>;
+type Page = Vec<usize>;
 
-fn parse_input(input: &str) -> (Vec<(u8, u8)>, Vec<Vec<u8>>) {
+fn parse_input(input: &str) -> (Vec<Idx>, Vec<Page>) {
     let split: Vec<&str> = input.split("\n\n").collect();
     let (pair_str, page_str) = (split[0], split[1]);
     let pairs = parse_pairs(pair_str);
@@ -13,7 +14,7 @@ fn parse_input(input: &str) -> (Vec<(u8, u8)>, Vec<Vec<u8>>) {
     (pairs, pages)
 }
 
-fn parse_pairs(input: &str) -> Vec<(u8, u8)> {
+fn parse_pairs(input: &str) -> Vec<Idx> {
     input
         .lines()
         .map(|l| {
@@ -23,44 +24,38 @@ fn parse_pairs(input: &str) -> Vec<(u8, u8)> {
         .collect()
 }
 
-fn parse_pages(input: &str) -> Vec<Vec<u8>> {
+fn parse_pages(input: &str) -> Vec<Page> {
     input
         .lines()
-        .map(|l| -> Vec<u8> {
-            if let Ok((_, digits)) = parse_digits(l) {
-                digits
-            } else {
-                panic!("ah no")
-            }
+        .map(|l| -> Page {
+            l.split(",")
+                .map(|d| d.parse::<usize>().expect("invalid digit"))
+                .collect()
         })
         .collect()
 }
 
-fn parse_digits(s: &str) -> IResult<&str, Vec<u8>> {
-    separated_list1(tag(","), character::complete::u8)(s)
-}
-
-fn create_matrix(pairs: &[(u8, u8)]) -> Matrix {
+fn create_matrix(pairs: &[Idx]) -> Matrix {
     let max = *pairs
         .iter()
         .flat_map(|(a, b)| [a, b])
         .max()
-        .expect("iterator is non-empty") as usize
+        .expect("iterator is non-empty")
         + 1;
     let mut matrix = Grid::new(max, max, vec![Ordering::Equal; max * max]);
     for (a, b) in pairs {
-        matrix.replace_cell((*a as usize, *b as usize), Ordering::Less);
-        matrix.replace_cell((*b as usize, *a as usize), Ordering::Greater);
+        matrix.replace_cell((*a, *b), Ordering::Less);
+        matrix.replace_cell((*b, *a), Ordering::Greater);
     }
     matrix
 }
 
-fn valid_pages(pages: &[Vec<u8>], matrix: &Matrix) -> usize {
+fn valid_pages(pages: &[Page], matrix: &Matrix) -> usize {
     pages
         .iter()
         .filter_map(|p| {
             if check_order(p, matrix) {
-                Some(p[p.len() / 2] as usize)
+                Some(p[p.len() / 2])
             } else {
                 None
             }
@@ -68,19 +63,19 @@ fn valid_pages(pages: &[Vec<u8>], matrix: &Matrix) -> usize {
         .sum()
 }
 
-fn fix_invalid_pages(pages: &mut [Vec<u8>], matrix: &Matrix) -> usize {
+fn fix_invalid_pages(pages: &mut [Page], matrix: &Matrix) -> usize {
     pages
         .iter_mut()
         .filter(|p| !check_order(p, matrix))
         .map(|v| {
-            v.sort_by(|a, b| *matrix.get((*a as usize, *b as usize)).unwrap());
-            v[v.len() / 2] as usize
+            v.sort_by(|a, b| *matrix.get((*a, *b)).unwrap());
+            v[v.len() / 2]
         })
         .sum()
 }
 
-fn check_order(page: &[u8], matrix: &Matrix) -> bool {
-    page.is_sorted_by(|a, b| *matrix.get((*a as usize, *b as usize)).unwrap() == Ordering::Less)
+fn check_order(page: &[usize], matrix: &Matrix) -> bool {
+    page.is_sorted_by(|a, b| *matrix.get((*a, *b)).unwrap() == Ordering::Less)
 }
 
 pub fn solve() {
@@ -125,7 +120,7 @@ mod test {
 61,13,29
 97,13,75,29,47";
 
-    fn get_data() -> (Vec<(u8, u8)>, Vec<Vec<u8>>) {
+    fn get_data() -> (Vec<Idx>, Vec<Page>) {
         let split: Vec<&str> = TEST_INPUT.split("\n\n").collect();
         let (pair_str, page_str) = (split[0], split[1]);
         let pairs = parse_pairs(pair_str);
@@ -151,13 +146,13 @@ mod test {
     fn test_page_order() {
         let (pairs, pages) = get_data();
         let matrix = create_matrix(&pairs);
-        assert_eq!(143usize, valid_pages(&pages, &matrix));
+        assert_eq!(143, valid_pages(&pages, &matrix));
     }
 
     #[test]
     fn test_fix_unordered() {
         let (pairs, mut pages) = get_data();
         let matrix = create_matrix(&pairs);
-        assert_eq!(123usize, fix_invalid_pages(&mut pages, &matrix))
+        assert_eq!(123, fix_invalid_pages(&mut pages, &matrix))
     }
 }
