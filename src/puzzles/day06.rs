@@ -2,6 +2,8 @@ use std::{collections::HashSet, fs::read_to_string};
 
 use simple_grid::{Grid, GridIndex};
 
+use crate::shared::util::{clear_screen, wait_millis};
+
 type Idx = (usize, usize);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -41,6 +43,17 @@ impl Direction {
     }
 }
 
+impl std::fmt::Display for Tile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let c = match self {
+            Tile::Empty => '.',
+            Tile::Obstacle => '#',
+            Tile::Guard => '@',
+        };
+        write!(f, "{}", c)
+    }
+}
+
 impl From<char> for Tile {
     fn from(value: char) -> Self {
         match value {
@@ -76,7 +89,7 @@ fn do_move(cur_pos: Idx, direction: &mut Direction, board: &Grid<Tile>) -> Optio
                 }
                 Tile::Obstacle => {
                     *direction = direction.turn_right();
-                    direction.get_next_idx(next_idx);
+                    return direction.get_next_idx(cur_pos);
                 }
                 _ => panic!("oh no"),
             }
@@ -87,35 +100,49 @@ fn do_move(cur_pos: Idx, direction: &mut Direction, board: &Grid<Tile>) -> Optio
     None
 }
 
-fn walk(board: &Grid<Tile>, start: Idx) -> HashSet<(Idx, Direction)> {
+fn walk(board: &mut Grid<Tile>, start: Idx) -> HashSet<Idx> {
     let mut guard_pos = start;
     let mut cur_dir = Direction::Up;
-    let mut visited = HashSet::from([(guard_pos, cur_dir)]);
+    let mut visited = HashSet::from([guard_pos]);
     while let Some(next_idx) = do_move(guard_pos, &mut cur_dir, board) {
+        // wait_millis(100);
+        // clear_screen();
+        // let old = board.replace_cell(guard_pos, Tile::Guard);
+        // println!("{}", board.to_pretty_string());
+        // board.replace_cell(guard_pos, old);
+        // println!("next_idx: {next_idx:?}");
         guard_pos = next_idx;
-        visited.insert((guard_pos, cur_dir));
+        visited.insert(guard_pos);
     }
     visited
 }
 
-fn detect_loop(board: &Grid<Tile>, start: Idx) -> bool {
+fn detect_loop_walk(board: &Grid<Tile>, start: Idx, wall: Idx) -> bool {
+    let mut board_clone = board.clone();
+    board_clone.replace_cell(wall, Tile::Obstacle);
     let mut guard_pos = start;
     let mut cur_dir = Direction::Up;
-    let mut visited = HashSet::from([(guard_pos, cur_dir)]);
+    let mut visited = HashSet::from([(start, cur_dir)]);
     loop {
+        // wait_millis(10);
+        // clear_screen();
+        // let old = board_clone.replace_cell(guard_pos, Tile::Guard);
+        // println!("{}", board_clone.to_pretty_string());
+        // board_clone.replace_cell(guard_pos, old);
         if let Some(pos) = cur_dir.get_next_idx(guard_pos) {
-            match board.get(pos) {
+            match board_clone.get(pos) {
                 Some(Tile::Obstacle) => {
                     // Check if we've faced this exact obstacle before
                     if visited.contains(&(pos, cur_dir)) {
                         break true;
                     }
+                    // only need to store collisions with obstacles
                     visited.insert((pos, cur_dir));
                     cur_dir = cur_dir.turn_right();
-                    guard_pos = pos;
                 }
                 Some(Tile::Empty) => {
                     guard_pos = pos;
+                    visited.insert((pos, cur_dir));
                 }
                 Some(Tile::Guard) => {
                     panic!("no other guards on the board");
@@ -125,14 +152,32 @@ fn detect_loop(board: &Grid<Tile>, start: Idx) -> bool {
                     break false;
                 }
             }
+        } else {
+            break false;
         }
     }
 }
 
+fn part2(board: &Grid<Tile>, start: Idx) -> usize {
+    println!("Board: {}, {}", board.width(), board.height());
+    board
+        .indices()
+        .filter(|grid_index| {
+            let pos = (grid_index.column(), grid_index.row());
+            // println!("trying {pos:?}");
+            pos.0!= start.0 && pos.1 != start.1 // don't check original guard start
+            && board.get(pos).unwrap() == &Tile::Empty
+            && detect_loop_walk(board, start, pos)
+        })
+        .count()
+}
+
 pub fn solve() {
     let input = read_to_string("inputs/day06.txt").expect("file read error");
-    let (board, start) = parse(&input);
-    println!("Part 1: {}", walk(&board, start).len());
+    let (mut board, start) = parse(&input);
+    let visited = walk(&mut board, start);
+    println!("Part 1: {}", visited.len());
+    println!("Part 2: {}", part2(&board, start));
 }
 
 #[cfg(test)]
@@ -159,8 +204,15 @@ mod test {
 
     #[test]
     fn test_walk() {
-        let (board, start) = parse(TEST_INPUT);
-        let visited = walk(&board, start);
+        let (mut board, start) = parse(TEST_INPUT);
+        let visited = walk(&mut board, start);
         assert_eq!(41, visited.len());
+    }
+
+    #[test]
+    fn test_detect_loops() {
+        let (board, start) = parse(TEST_INPUT);
+        let loops = part2(&board, start);
+        assert_eq!(6, loops);
     }
 }

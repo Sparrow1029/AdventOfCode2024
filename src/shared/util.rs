@@ -8,7 +8,7 @@ pub fn read_lines(filename: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn sleep(s: u64) {
+pub fn wait_millis(s: u64) {
     let time = std::time::Duration::from_millis(s);
     std::thread::sleep(time);
 }
