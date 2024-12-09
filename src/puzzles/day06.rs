@@ -177,7 +177,8 @@ pub fn solve() {
     let (mut board, start) = parse(&input);
     let visited = walk(&mut board, start);
     println!("Part 1: {}", visited.len());
-    println!("Part 2: {}", part2(&board, start));
+    // println!("Part 2: {}", part2(&board, start));
+    println!("Part 2: TOO_SLOW");
 }
 
 #[cfg(test)]

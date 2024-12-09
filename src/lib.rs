@@ -3,13 +3,16 @@ pub mod shared;
 
 use clap::{Parser, Subcommand};
 
-pub const DAYS: [fn(); 6] = [
+pub const DAYS: [fn(); 9] = [
     puzzles::day01::solve as fn(),
     puzzles::day02::solve as fn(),
     puzzles::day03::solve as fn(),
     puzzles::day04::solve as fn(),
     puzzles::day05::solve as fn(),
     puzzles::day06::solve as fn(),
+    puzzles::day07::solve as fn(),
+    puzzles::day08::solve as fn(),
+    puzzles::day09::solve as fn(),
 ];
 
 #[derive(Parser)]
