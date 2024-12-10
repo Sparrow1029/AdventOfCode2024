@@ -50,6 +50,10 @@ fn compress(disk: &mut [usize], start: usize) {
     }
 }
 
+/// Take each file block from the end, check if it can fit in any free space starting from the
+/// left. If so, swap out its location with all zeros and place it in the free space.
+/// Increment/decrement a bunch of counters to keep track of which slice we are currently operating
+/// on.
 fn compress_v2(disk: &mut Vec<usize>, disk_map: &[usize]) -> usize {
     let start = disk_map[0];
     let mut disk_ptr = disk.len() - disk_map[disk_map.len() - 1];
@@ -62,18 +66,7 @@ fn compress_v2(disk: &mut Vec<usize>, disk_map: &[usize]) -> usize {
         let windows = check_slice.windows(block_size).enumerate();
         let to_swap = vec![0; block_size];
 
-        //         let debug_info = format!(
-        //             r#"\n==\nzero_pos: {zero_pos}
-        // block_size: {block_size}
-        // cur_block: {cur_block:?}
-        // check_slice: {check_slice:?}
-        //         "#
-        //         );
-        //         println!("{}", debug_info);
-        //         wait_millis(1000);
-
         for (idx, slice) in windows {
-            // println!("slice: {slice:?}");
             if slice.iter().all(|d| *d == 0) {
                 let cur_idx = idx + zero_pos;
                 disk.splice(cur_idx..cur_idx + block_size, cur_block.clone());
@@ -89,7 +82,6 @@ fn compress_v2(disk: &mut Vec<usize>, disk_map: &[usize]) -> usize {
             break 'outer;
         }
     }
-    // println!("Post-compression: {disk:?}");
     checksum(disk)
 }
 
