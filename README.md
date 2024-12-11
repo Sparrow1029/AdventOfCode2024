@@ -21,3 +21,38 @@ the approach to testing the sequences.
 
 Got stuck for a while because of how the `regex` crate's `captures_iter` works.
 Ended up with an okay solution.
+
+## Day 04
+
+**TODO**!
+
+## Day 05
+
+**TODO**!
+
+## Day 06
+
+**TODO**!
+
+## Day 07
+
+**TODO**!
+
+## Day 08
+
+**TODO**!
+
+## Day 09
+
+**TODO**!
+
+## Day 10
+
+**TODO**!
+
+## Day 11
+
+Original solution was to use `VecDeque<u64>`, but that proved too naïve for day 2.
+Cribbed off answers found online using `HashMap` tracking counts of values
+present in the vector. Forgot about that trick, though it's been the optimal
+solution for exponential growth problems in the past.
