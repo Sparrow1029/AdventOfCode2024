@@ -48,7 +48,11 @@ Ended up with an okay solution.
 
 ## Day 10
 
-**TODO**!
+Decided to use `petgraph`. The nodes are weighted with the values from the
+grid, and the only edges that exist are between nodes that have a weight
+difference of one. The graph is also directed in that only paths from 0->9 have
+connections. I'm certain that a depth-first-search traversal of the grid would
+have worked just fine and saved some work... but hey it works.
 
 ## Day 11
 

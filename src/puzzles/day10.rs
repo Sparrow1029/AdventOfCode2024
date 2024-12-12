@@ -1,70 +1,19 @@
-use std::collections::HashSet;
+use std::fs::read_to_string;
 
-use simple_grid::{Grid, GridIndex};
+use petgraph::{
+    algo::{all_simple_paths, astar},
+    graph::NodeIndex,
+    Graph,
+};
+use simple_grid::Grid;
 
-fn dfs(
-    grid: &Grid<u32>,
-    visited: &mut HashSet<GridIndex>,
-    start_pos: (usize, usize),
-    total: &mut u32,
+fn parse_input(
+    input: &str,
+) -> (
+    Graph<u32, u32, petgraph::Directed>,
+    Vec<NodeIndex>,
+    Vec<NodeIndex>,
 ) {
-    let cur_cell_val = grid.get(start_pos).unwrap();
-    println!("dfs {start_pos:?} - {cur_cell_val}");
-    for nbr in grid.cardinal_neighbor_indices_of(start_pos) {
-        if visited.contains(&nbr) {
-            continue;
-        }
-        let nbr_cell_val = grid.get(nbr).unwrap();
-        // let seen = !visited.insert(nbr);
-        let greater = nbr_cell_val > cur_cell_val;
-        let is_one_diff = if greater {
-            nbr_cell_val - cur_cell_val == 1
-        } else {
-            false
-        };
-        println!(
-            "  checking ({}, {}) - {nbr_cell_val}",
-            nbr.column(),
-            nbr.row()
-        );
-        // println!("   seen? {seen:?}");
-        // if !seen {
-        //     println!(
-        //         "   {nbr_cell_val} > {cur_cell_val}? {}",
-        //         nbr_cell_val > cur_cell_val
-        //     );
-        //     if nbr_cell_val >= cur_cell_val {
-        //         println!(
-        //             "   {nbr_cell_val} - {cur_cell_val} == 1? {}",
-        //             nbr_cell_val - cur_cell_val == 1
-        //         );
-        //     }
-        // }
-        if !greater || !is_one_diff {
-            println!("  continuing!");
-            continue;
-        }
-        if *nbr_cell_val == 9 {
-            println!("FOUND 9!");
-            *total += 1;
-            return;
-        }
-        if !visited.insert(nbr) {
-            panic!("already in there")
-        }
-        dfs(grid, visited, (nbr.column(), nbr.row()), total);
-    }
-}
-
-fn trailheads(grid: &Grid<u32>) -> Vec<(usize, usize)> {
-    grid.cells_with_indices_iter()
-        .filter(|(_, cell)| *cell == &0)
-        .map(|(i, _)| (i.column(), i.row()))
-        .collect()
-}
-
-// fn parse_input(input: &str) -> Graph<u32, u32, petgraph::Undirected> {
-fn parse_input(input: &str) -> Grid<u32> {
     let width = input.lines().next().unwrap().len();
     let height = input.len() / width;
     let grid = Grid::new(
@@ -75,36 +24,74 @@ fn parse_input(input: &str) -> Grid<u32> {
             .flat_map(|l| l.chars().map(|c| c.to_digit(10).unwrap()))
             .collect(),
     );
-    grid
-    // let xy_to_idx = |x: usize, y: usize| -> u32 { (y * width + x) as u32 };
-    // let mut graph = Graph::new_undirected();
-    // for y in 0..height {
-    //     for x in 0..width {
-    //         let cur_cell = grid.get((x, y)).unwrap();
-    //         let idx = xy_to_idx(x, y);
-    //         let mut node = if let Some(n) = graph.ge
-    //         for pt in grid.neighbor_indices_of((x, y)) {
-    //             let nbr_cell = grid.get((pt.column(), pt.row())).unwrap();
-    //             let nbr_idx = xy_to_idx(pt.column(), pt.row());
-    //             let nbr_weight = grid.get(pt).unwrap().abs_diff(*cur_cell);
-    //             if nbr_weight == 1 {
-    //                 graph.add_edge(idx.into(), nbr_idx.into(), nbr_weight);
-    //             }
-    //         }
-    //     }
-    // }
-    // println!("{graph:?}");
-    // graph
+    let mut zero_indices = vec![];
+    let mut nine_indices = vec![];
+    let mut graph = Graph::new();
+    for cell in grid.cell_iter() {
+        let node = graph.add_node(*cell);
+        if *cell == 0 {
+            zero_indices.push(node);
+        }
+        if *cell == 9 {
+            nine_indices.push(node);
+        }
+    }
+    for (i, (x, y)) in grid
+        .indices()
+        .map(|idx| (idx.column(), idx.row()))
+        .enumerate()
+    {
+        let node = NodeIndex::from(i as u32);
+        let weight = *graph.node_weight(node).unwrap();
+        grid.cardinal_neighbor_indices_of((x, y)).for_each(|i| {
+            let nbr_node_ix = NodeIndex::from((i.row() * grid.width() + i.column()) as u32);
+            let cell = *grid.get(i).unwrap();
+            if cell > weight && cell - weight == 1 {
+                graph.add_edge(node, nbr_node_ix, 1);
+            }
+        });
+    }
+    (graph, zero_indices, nine_indices)
 }
 
-fn part1() {}
+fn part1(graph: &Graph<u32, u32>, zeroes: &[NodeIndex], nines: &[NodeIndex]) -> usize {
+    zeroes
+        .iter()
+        .flat_map(|start| {
+            nines.iter().filter_map(|finish| {
+                astar(&graph, *start, |f| f == *finish, |e| *e.weight(), |_| 9)
+            })
+        })
+        .count()
+}
 
-fn part2() {}
+fn part2(graph: &Graph<u32, u32>, zeroes: &[NodeIndex], nines: &[NodeIndex]) -> usize {
+    zeroes
+        .iter()
+        .map(|start| {
+            nines
+                .iter()
+                .map(|finish| {
+                    all_simple_paths::<Vec<_>, _>(&graph, *start, *finish, 0, None)
+                        .collect::<Vec<_>>()
+                        .len()
+                })
+                .sum::<usize>()
+        })
+        .sum()
+}
 
-pub fn solve() {}
+pub fn solve() {
+    let input = read_to_string("inputs/day10.txt").expect("error opening file");
+    let (graph, zeroes, nines) = parse_input(input.strip_suffix("\n").unwrap());
+    println!("Part 1: {}", part1(&graph, &zeroes, &nines));
+    println!("Part 2: {}", part2(&graph, &zeroes, &nines));
+}
 
 #[cfg(test)]
 mod test {
+    use petgraph::algo::astar;
+
     use super::*;
 
     const TEST_INPUT: &str = "\
@@ -119,20 +106,27 @@ mod test {
 
     #[test]
     fn test_parse() {
-        let grid = parse_input(TEST_INPUT);
-        println!("{}", grid.to_pretty_string());
-        let mut visited = HashSet::new();
-
-        let mut total = 0;
-        trailheads(&grid)
-            .iter()
-            .for_each(|pos| dfs(&grid, &mut visited, *pos, &mut total));
-        println!("total: {total}");
+        let char_count = TEST_INPUT.lines().flat_map(|l| l.chars()).count();
+        let (graph, _, _) = parse_input(TEST_INPUT);
+        assert_eq!(graph.node_count(), char_count);
     }
 
     #[test]
-    fn test_part1() {}
+    fn test_astar() {
+        let (graph, zeroes, nines) = parse_input(TEST_INPUT);
+        assert!(astar(&graph, zeroes[0], |f| f == nines[0], |e| *e.weight(), |_| 9).is_some());
+        assert!(astar(&graph, zeroes[0], |f| f == nines[1], |e| *e.weight(), |_| 9).is_none());
+    }
 
     #[test]
-    fn test_part2() {}
+    fn test_part1() {
+        let (graph, zeroes, nines) = parse_input(TEST_INPUT);
+        assert_eq!(36, part1(&graph, &zeroes, &nines));
+    }
+
+    #[test]
+    fn test_part2() {
+        let (graph, zeroes, nines) = parse_input(TEST_INPUT);
+        assert_eq!(81, part2(&graph, &zeroes, &nines));
+    }
 }

@@ -13,7 +13,7 @@ fn main() {
                 }
             }
             Commands::Solve { day } => {
-                if day.unsigned_abs() <= DAYS.len() && day.unsigned_abs() >= 1 {
+                if day >= 1 && (1..DAYS.len() + 1).contains(&day.unsigned_abs()) {
                     DAYS[day.unsigned_abs() - 1]();
                 } else {
                     println!("Error: Day {day} not implemented");
