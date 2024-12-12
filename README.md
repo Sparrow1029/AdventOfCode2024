@@ -24,19 +24,53 @@ Ended up with an okay solution.
 
 ## Day 04
 
-**TODO**!
+Horrible, hacky (seemingly) way to get all the diagonals from a 2d matrix.
+Pretty straightforward problem, if my solution is terrible and not really
+elegant heh (but it works)
 
 ## Day 05
 
-**TODO**!
+Real thinker. Messed around with a couple solutions before this one. The gist
+is to take all the pairwise comparisons given and record them for easy access
+in a ranking matrix.
+
+For the sample input, this grid would look like this (I left out all the
+non-present integers, but it would be a 98 x 98 grid where all the empty spaces
+are filled with `Ordering::Equal`):
+
+```text
+13 29 47 53 61 75 97
+13 = > > > > > >
+29 < = > > > > >
+47 < < = < < > >
+53 < < > = > > >
+61 < < > < = > >
+75 < < < < < = >
+97 < < < < < < =
+```
+
+I discovered this can’t be used for a [total
+order](https://en.wikipedia.org/wiki/Total_order) on the actual puzzle input
+because there were cycles in the pairs given (see how [rust changed sort
+implementations as of
+1.81](https://blog.rust-lang.org/2024/09/05/Rust-1.81.0.html#new-sort-implementations)).
+I used `usize` for convenience (I did it with `u8` for all the pair values
+originally, but kept having to cast over and over `as usize`). Didn’t notice a
+performance difference, but I’m sure uses a bit more memory.
+
+Also I Liked the `simple_grid` crate a little better than the `grid` one. Will
+have to refactor that out at some point.
 
 ## Day 06
 
-**TODO**!
+Part 1 is naïve but it works. Haven't sorted part 2 yet... **TODO**!
 
 ## Day 07
 
-**TODO**!
+Finally used the `itertools` crate. Using the `itertools::repeat_n` function +
+the `multi_cartesian_product` to get every possible combination of the
+operators to be used in each equation. If any equal the desired value, add it
+to the sum of possible equations.
 
 ## Day 08
 
@@ -44,7 +78,12 @@ Ended up with an okay solution.
 
 ## Day 09
 
-**TODO**!
+Part 1: `Vec.splice(...)` for the win! Ability to swap out ranges of values in
+a vec is _very_ handy.
+
+Part 2: Very complicated bunch of incrementing/decrementing, and tracking
+position within the "disk" vec. Pretty straightforward implementation, just a
+lot of juggling "pointers" (current indexes).
 
 ## Day 10
 

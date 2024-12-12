@@ -1,7 +1,5 @@
 use std::fs::read_to_string;
 
-use crate::shared::util::wait_millis;
-
 fn parse_input(input: &str) -> Vec<usize> {
     input
         .strip_suffix("\n")

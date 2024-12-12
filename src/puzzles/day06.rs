@@ -2,8 +2,6 @@ use std::{collections::HashSet, fs::read_to_string};
 
 use simple_grid::{Grid, GridIndex};
 
-use crate::shared::util::{clear_screen, wait_millis};
-
 type Idx = (usize, usize);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -117,6 +115,7 @@ fn walk(board: &mut Grid<Tile>, start: Idx) -> HashSet<Idx> {
     visited
 }
 
+#[allow(unused)]
 fn detect_loop_walk(board: &Grid<Tile>, start: Idx, wall: Idx) -> bool {
     let mut board_clone = board.clone();
     board_clone.replace_cell(wall, Tile::Obstacle);
@@ -158,6 +157,7 @@ fn detect_loop_walk(board: &Grid<Tile>, start: Idx, wall: Idx) -> bool {
     }
 }
 
+#[allow(unused)]
 fn part2(board: &Grid<Tile>, start: Idx) -> usize {
     println!("Board: {}, {}", board.width(), board.height());
     board

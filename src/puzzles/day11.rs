@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    hash::Hash,
-};
+use std::collections::HashMap;
 
 /// Create HashMap of present stone values
 fn parse_input(input: &str) -> HashMap<u64, usize> {
