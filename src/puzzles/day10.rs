@@ -72,9 +72,7 @@ fn part2(graph: &Graph<u32, u32>, zeroes: &[NodeIndex], nines: &[NodeIndex]) -> 
             nines
                 .iter()
                 .map(|finish| {
-                    all_simple_paths::<Vec<_>, _>(&graph, *start, *finish, 0, None)
-                        .collect::<Vec<_>>()
-                        .len()
+                    all_simple_paths::<Vec<_>, _>(&graph, *start, *finish, 0, None).count()
                 })
                 .sum::<usize>()
         })
