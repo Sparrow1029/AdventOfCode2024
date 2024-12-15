@@ -3,12 +3,10 @@ pub struct Point {
     pub x: i32,
     pub y: i32,
 }
+
 impl From<(i32, i32)> for Point {
-    fn from(value: (i32, i32)) -> Self {
-        Self {
-            x: value.0,
-            y: value.0,
-        }
+    fn from((x, y): (i32, i32)) -> Self {
+        Self { x, y }
     }
 }
 
