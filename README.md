@@ -2,6 +2,20 @@
 
 Solutions for the Advent of Code 2024 challenges in Rust
 
+To build and run, add an `inputs/` directory to the project root containing
+puzzle input files named like `day01.txt`. You can then either
+
+```bash
+cargo build --release
+./target/release/aoc24 --help
+```
+
+or
+
+```bash
+cargo run -- --help
+```
+
 ## Day 01
 
 Pretty simple. Be nice to come up with a macro to implement all the match

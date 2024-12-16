@@ -1,3 +1,6 @@
+use anyhow::anyhow;
+use simple_grid::GridIndex;
+
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Point {
     pub x: i32,
@@ -7,6 +10,27 @@ pub struct Point {
 impl From<(i32, i32)> for Point {
     fn from((x, y): (i32, i32)) -> Self {
         Self { x, y }
+    }
+}
+
+impl From<GridIndex> for Point {
+    fn from(idx: GridIndex) -> Self {
+        Point {
+            x: idx.column() as i32,
+            y: idx.row() as i32,
+        }
+    }
+}
+
+impl TryInto<GridIndex> for Point {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> Result<GridIndex, Self::Error> {
+        if self.y < 0 || self.x < 0 {
+            Err(anyhow!("out of bounds"))
+        } else {
+            Ok(GridIndex::new(self.x as usize, self.y as usize))
+        }
     }
 }
 
@@ -38,6 +62,24 @@ impl Point {
     pub fn get_normal_vector(&self, other: &Point) -> (f32, f32) {
         let dist = self.distance(other);
         (self.x as f32 / dist, self.y as f32 / dist)
+    }
+
+    pub fn cardinal_neighbors(&self) -> [Self; 4] {
+        [
+            (self.x, self.y - 1).into(), // up
+            (self.x + 1, self.y).into(), // right
+            (self.x, self.y + 1).into(), // down
+            (self.x - 1, self.y).into(), // left
+        ]
+    }
+
+    pub fn diag_neighbors(&self) -> [Self; 4] {
+        [
+            (self.x + 1, self.y - 1).into(), // up-right
+            (self.x + 1, self.y + 1).into(), // down-right
+            (self.x - 1, self.y + 1).into(), // down-left
+            (self.x - 1, self.y - 1).into(), // up-left
+        ]
     }
 }
 
