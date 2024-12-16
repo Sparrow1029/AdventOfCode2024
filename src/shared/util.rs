@@ -1,4 +1,9 @@
 use std::fs::read_to_string;
+use std::io::Write;
+
+use std::sync::Once;
+
+static INIT_TEST_LOGGER: Once = Once::new();
 
 pub fn read_lines(filename: &str) -> Vec<String> {
     read_to_string(filename)
@@ -18,6 +23,10 @@ pub fn clear_screen() {
     print!("{esc}[2J{esc}[1;1H", esc = 27u8 as char);
 }
 
-pub fn test_logger_init() {
-    let _ = env_logger::builder().is_test(true).try_init();
+pub fn test_setup() {
+    INIT_TEST_LOGGER.call_once(|| {
+        env_logger::builder()
+            .format(|buf, record| writeln!(buf, "{}: {}", record.level(), record.args()))
+            .init()
+    });
 }
