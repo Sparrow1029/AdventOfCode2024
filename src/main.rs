@@ -2,6 +2,7 @@ use aoc24::{Cli, Commands, DAYS};
 use clap::Parser;
 
 fn main() {
+    env_logger::init();
     let cli = Cli::parse();
     if let Some(subcommand) = cli.run {
         match subcommand {

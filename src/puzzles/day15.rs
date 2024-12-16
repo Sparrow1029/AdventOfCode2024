@@ -1,5 +1,6 @@
 use std::{
-    collections::{HashMap, HashSet, VecDeque},
+    collections::{HashSet, VecDeque},
+    env,
     fs::read_to_string,
 };
 
@@ -64,9 +65,34 @@ fn get_price_and_regions(grid: &Grid<char>, regions: &mut Vec<HashSet<Point>>) -
     price
 }
 
+/// Get all sides by checking one direction at a time
+/// ```
+/// (0, -1), (1, 0), (0, 1) (-1, 0)
+///   up     right    down   left
+/// ```
+/// Example for 'R':
+/// ```
+/// RRRII  we check first  ^^^II
+/// RRRRI  by looking up   ^^^^I
+/// VRIII  like so:        V^III
+/// ```
+///
+/// We record all positions that are not in the region
+/// ```
+/// (0, -1), (1, -1), (2, -1), (3, -1), (4, 1)
+/// ```
+/// Then, for each of those positions, we collect corners only by checking
+/// counter-clockwise to the current direction.
+/// ```
+/// to_remove = /* HashSet */ [(0, -1), (1, -1), (2, -1)];
+/// sides.len() /* 4 */ - remove.len() /* 3 */ = 1;
+/// //
+/// ```
+///
 fn count_region_sides(region: &HashSet<Point>) -> usize {
     let mut side_count = 0;
     for direction in Point::new(0, 0).cardinal_neighbors() {
+        // println!("Direction: {direction}");
         let mut sides = HashSet::new();
         for pos in region {
             let pt = *pos + direction;
@@ -75,13 +101,28 @@ fn count_region_sides(region: &HashSet<Point>) -> usize {
             }
         }
         let mut to_remove = HashSet::new();
-        for side in &sides {
+        log::debug!("all sides: ");
+        if env::var("RUST_LOG") == Ok("debug".to_string()) {
+            for side in sides
+                .iter()
+                .sorted_by(|a, b| a.x.cmp(&b.x).then(a.y.cmp(&b.y)))
+            {
+                log::debug!("{side} ");
+            }
+        }
+        for side in sides
+            .iter()
+            .sorted_by(|a, b| a.x.cmp(&b.x).then(a.y.cmp(&b.y)))
+        {
+            // println!("  checking side: {side}");
             let mut next = (side.x + direction.y, side.y + direction.x).into();
             while sides.contains(&next) {
+                log::debug!("    next: {next}");
                 to_remove.insert(next);
                 next = (next.x + direction.y, next.y + direction.x).into();
             }
         }
+        // println!("  to_remove: {to_remove:?}");
         side_count += sides.len() - to_remove.len();
     }
     side_count
@@ -103,6 +144,7 @@ pub fn solve() {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::shared::util::test_logger_init;
 
     const TEST_INPUT: &str = "\
 RRRRIICCFF
@@ -119,18 +161,21 @@ MMMISSJEEE
 
     #[test]
     fn test_parse() {
+        test_logger_init();
         let grid = parse_input(TEST_INPUT);
         assert_eq!(grid.get(GridIndex::from((1, 2))), Some(&'V'));
     }
 
     #[test]
     fn test_bfs_part1() {
+        test_logger_init();
         let grid = parse_input(TEST_INPUT);
         assert_eq!(get_price_and_regions(&grid, &mut vec![]), 1930);
     }
 
     #[test]
     fn test_bfs_part2() {
+        test_logger_init();
         let grid = parse_input(TEST_INPUT);
         let mut regions = Vec::new();
         _ = get_price_and_regions(&grid, &mut regions);
@@ -149,6 +194,7 @@ MMMISSJEEE
 
     #[test]
     fn test_part2_total() {
+        test_logger_init();
         let grid = parse_input(TEST_INPUT);
         let mut regions = Vec::new();
         _ = get_price_and_regions(&grid, &mut regions);

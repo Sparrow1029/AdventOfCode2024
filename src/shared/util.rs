@@ -17,3 +17,7 @@ pub fn clear_screen() {
     print!("\x1B[2J\x1B[1;1H");
     print!("{esc}[2J{esc}[1;1H", esc = 27u8 as char);
 }
+
+pub fn test_logger_init() {
+    let _ = env_logger::builder().is_test(true).try_init();
+}
