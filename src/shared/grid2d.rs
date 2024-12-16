@@ -1,4 +1,4 @@
-use std::{fmt::Debug, hash::Hash, vec::IntoIter};
+use std::{fmt::Debug, vec::IntoIter};
 
 use grid::Grid;
 use itertools::Itertools;
