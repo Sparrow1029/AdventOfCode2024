@@ -1,6 +1,5 @@
 use std::{
     collections::{HashSet, VecDeque},
-    env,
     fs::read_to_string,
 };
 
@@ -11,7 +10,7 @@ use crate::shared::point::Point;
 
 fn parse_input(input: &str) -> Grid<char> {
     let height = input.lines().count();
-    let width = input.lines().peekable().peek().expect("no line").len();
+    let width = input.lines().next().unwrap().chars().count();
     Grid::new(
         width,
         height,
@@ -81,7 +80,7 @@ fn get_price_and_regions(grid: &Grid<char>, regions: &mut Vec<HashSet<Point>>) -
 ///
 /// We record all positions that are not in the region
 /// ```no_run
-/// (0, -1), (1, -1), (2, -1), (3, -1), (4, 1)
+/// (0, -1), (1, -1), (2, -1), (3, -1), (4, 2)
 /// ```
 /// Then, for each of those positions, we collect sides facing up by looking
 /// counter-clockwise to the current direction, and removing all but the top
@@ -131,7 +130,7 @@ fn count_region_sides(region: &HashSet<Point>) -> usize {
 }
 
 pub fn solve() {
-    let input = read_to_string("inputs/day15.txt").expect("file read err");
+    let input = read_to_string("inputs/day12.txt").expect("file read err");
     let grid = parse_input(&input);
     let mut regions = Vec::new();
     let price_pt1 = get_price_and_regions(&grid, &mut regions);

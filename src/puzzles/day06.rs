@@ -1,5 +1,6 @@
 use std::{collections::HashSet, fs::read_to_string};
 
+use crate::shared::grid2d::Direction;
 use simple_grid::{Grid, GridIndex};
 
 type Idx = (usize, usize);
@@ -9,14 +10,6 @@ enum Tile {
     Empty,
     Obstacle,
     Guard,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Direction {
-    Up,
-    Right,
-    Down,
-    Left,
 }
 
 impl Direction {

@@ -3,6 +3,14 @@ use std::{fmt::Debug, vec::IntoIter};
 use grid::Grid;
 use itertools::Itertools;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Direction {
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
 pub struct Point {
     x: isize,
     y: isize,
